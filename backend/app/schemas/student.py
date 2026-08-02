@@ -1,0 +1,12 @@
+from pydantic import BaseModel, EmailStr
+
+class StudentRegister(BaseModel):
+    full_name: str
+    college_email: EmailStr
+    enrollment_no: str
+    mobile: str
+    department: str
+    year: int
+    section: str
+    password: str
+    confirm_password: str

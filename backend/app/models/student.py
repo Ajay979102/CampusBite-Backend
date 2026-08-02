@@ -1,17 +1,58 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, text
-from app.database.base import Base
+from app.database.connection import engine
+from sqlalchemy import text
+from fastapi import FastAPI
+from app.security.hashing import hash_password
+from app.api.student import router as student_router
 
-class Student(Base):
-    __tablename__ = "students"
 
-    id = Column(Integer, primary_key=True, index=True)
-    full_name = Column(String(100), nullable=False)
-    college_email = Column(String(150), unique=True, nullable=False)
-    enrollment_no = Column(String(30), unique=True, nullable=False)
-    mobile = Column(String(15))
-    department = Column(String(50))
-    year = Column(Integer)
-    section = Column(String(10))
-    password_hash = Column(String, nullable=False)
-    trust_score = Column(Integer, default=100)
-    created_at = Column(TIMESTAMP, server_default=text("CURRENT_TIMESTAMP"))
+app = FastAPI(
+    title="CampusBite API",
+    description="Backend API for CampusBite Smart Canteen System",
+    version="1.0.0"
+)
+
+# Student API Router
+app.include_router(student_router)
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "Welcome to CampusBite API 🚀"
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "Server is running successfully!"
+    }
+
+
+@app.get("/db-test")
+def db_test():
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+
+            return {
+                "status": "success",
+                "database": "Connected Successfully"
+            }
+
+    except Exception as e:
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
+
+
+@app.get("/hash-test")
+def hash_test():
+    password = "CampusBite123"
+    hashed = hash_password(password)
+
+    return {
+        "original": password,
+        "hashed": hashed
+    }
