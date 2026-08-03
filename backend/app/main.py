@@ -1,7 +1,9 @@
-from app.database.connection import engine
-from sqlalchemy import text
 from fastapi import FastAPI
+from sqlalchemy import text
+
+from app.database.connection import engine
 from app.security.hashing import hash_password
+from app.api.student import router as student_router
 
 app = FastAPI(
     title="CampusBite API",
@@ -9,13 +11,19 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Register Student API Router
+app.include_router(student_router)
+
+
 @app.get("/")
 def root():
     return {"message": "Welcome to CampusBite API 🚀"}
 
+
 @app.get("/health")
 def health():
     return {"status": "Server is running successfully!"}
+
 
 @app.get("/db-test")
 def db_test():
