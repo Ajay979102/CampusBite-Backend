@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
 
+
 class StudentRegister(BaseModel):
     full_name: str
     college_email: EmailStr
@@ -10,3 +11,8 @@ class StudentRegister(BaseModel):
     section: str
     password: str
     confirm_password: str
+
+
+class StudentLogin(BaseModel):
+    college_email: EmailStr
+    password: str

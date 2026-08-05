@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.database.connection import engine
-from app.security.hashing import hash_password
+from app.security.hashing import hash_password, verify_password
 from app.api.student import router as student_router
 
 app = FastAPI(
@@ -17,12 +17,16 @@ app.include_router(student_router)
 
 @app.get("/")
 def root():
-    return {"message": "Welcome to CampusBite API 🚀"}
+    return {
+        "message": "Welcome to CampusBite API 🚀"
+    }
 
 
 @app.get("/health")
 def health():
-    return {"status": "Server is running successfully!"}
+    return {
+        "status": "Server is running successfully!"
+    }
 
 
 @app.get("/db-test")
@@ -30,10 +34,12 @@ def db_test():
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
+
             return {
                 "status": "success",
                 "database": "Connected Successfully"
             }
+
     except Exception as e:
         return {
             "status": "failed",
@@ -43,10 +49,15 @@ def db_test():
 
 @app.get("/hash-test")
 def hash_test():
-    password = "CampusBite123"
+
+    password = "ajay"
+
     hashed = hash_password(password)
 
+    matched = verify_password(password, hashed)
+
     return {
-        "original": password,
-        "hashed": hashed
+        "password": password,
+        "hash": hashed,
+        "matched": matched
     }
