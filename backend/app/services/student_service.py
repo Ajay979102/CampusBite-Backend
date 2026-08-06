@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+import random
 
 from app.models.student import Student
 from app.security.hashing import hash_password, verify_password
@@ -172,4 +173,72 @@ def change_password(
 
     return {
         "message": "Password Changed Successfully"
+    }
+def forgot_password(db: Session, data):
+    # Check if email exists
+    student = db.query(Student).filter(
+        Student.college_email == data.college_email
+    ).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    # Generate 6-digit OTP
+    otp = str(random.randint(100000, 999999))
+
+    # Store OTP temporarily
+    student.reset_otp = otp
+
+    db.commit()
+
+    # Development only
+    print("=" * 50)
+    print("RESET OTP :", otp)
+    print("=" * 50)
+
+    return {
+        "message": "OTP generated successfully. Check server console."
+    }
+
+def reset_password(db: Session, data):
+
+    # Find Student
+    student = db.query(Student).filter(
+        Student.college_email == data.college_email
+    ).first()
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found"
+        )
+
+    # Check OTP
+    if student.reset_otp != data.otp:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid OTP"
+        )
+
+    # Password Match
+    if data.new_password != data.confirm_new_password:
+        raise HTTPException(
+            status_code=400,
+            detail="Passwords do not match"
+        )
+
+    # Update Password
+    student.password_hash = hash_password(data.new_password)
+
+    # Clear OTP
+    student.reset_otp = None
+    student.otp_created_at = None
+
+    db.commit()
+
+    return {
+        "message": "Password reset successful"
     }

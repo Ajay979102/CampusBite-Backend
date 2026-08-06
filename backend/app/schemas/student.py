@@ -27,3 +27,13 @@ class ChangePassword(BaseModel):
     old_password: str
     new_password: str
     confirm_new_password: str
+
+class ForgotPassword(BaseModel):
+    college_email: EmailStr
+
+
+class ResetPassword(BaseModel):
+    college_email: EmailStr
+    otp: str
+    new_password: str
+    confirm_new_password: str

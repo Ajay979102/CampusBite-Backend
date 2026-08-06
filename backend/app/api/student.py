@@ -9,16 +9,19 @@ from app.schemas.student import (
     StudentRegister,
     StudentLogin,
     StudentUpdate,
-    ChangePassword
+    ChangePassword,
+    ForgotPassword,
+    ResetPassword
 )
 
 from app.services.student_service import (
     register_student,
     login_student,
     update_student_profile,
-    change_password
+    change_password,
+    forgot_password,
+    reset_password
 )
-
 router = APIRouter(
     prefix="/students",
     tags=["Students"]
@@ -92,4 +95,31 @@ def change_student_password(
         db=db,
         current_student=current_student,
         password_data=password_data
+    )
+@router.post("/logout")
+def logout_student(
+    current_student: Student = Depends(get_current_student)
+):
+    return {
+        "message": "Logout Successful. Please remove the token from the client."
+    }
+
+@router.post("/forgot-password")
+def forgot_student_password(
+    data: ForgotPassword,
+    db: Session = Depends(get_db)
+):
+    return forgot_password(
+        db=db,
+        data=data
+    )
+
+@router.post("/reset-password")
+def reset_student_password(
+    data: ResetPassword,
+    db: Session = Depends(get_db)
+):
+    return reset_password(
+        db=db,
+        data=data
     )

@@ -1,3 +1,4 @@
+from app.api.menu import router as menu_router
 from fastapi import FastAPI
 from sqlalchemy import text
 from fastapi.security import OAuth2PasswordBearer
@@ -14,6 +15,7 @@ app = FastAPI(
 
 # Register Student API Router
 app.include_router(student_router)
+app.include_router(menu_router)
 
 
 @app.get("/")
