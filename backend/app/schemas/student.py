@@ -22,3 +22,8 @@ class StudentUpdate(BaseModel):
     department: str
     year: int
     section: str
+
+class ChangePassword(BaseModel):
+    old_password: str
+    new_password: str
+    confirm_new_password: str

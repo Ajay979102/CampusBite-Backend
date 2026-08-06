@@ -8,13 +8,15 @@ from app.models.student import Student
 from app.schemas.student import (
     StudentRegister,
     StudentLogin,
-    StudentUpdate
+    StudentUpdate,
+    ChangePassword
 )
 
 from app.services.student_service import (
     register_student,
     login_student,
-    update_student_profile
+    update_student_profile,
+    change_password
 )
 
 router = APIRouter(
@@ -79,4 +81,15 @@ def update_profile(
         db=db,
         current_student=current_student,
         student_data=student
+    )
+@router.put("/change-password")
+def change_student_password(
+    password_data: ChangePassword,
+    db: Session = Depends(get_db),
+    current_student: Student = Depends(get_current_student)
+):
+    return change_password(
+        db=db,
+        current_student=current_student,
+        password_data=password_data
     )

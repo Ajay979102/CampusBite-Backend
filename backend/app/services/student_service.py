@@ -136,3 +136,40 @@ def update_student_profile(
             "section": current_student.section
         }
     }
+def change_password(
+    db: Session,
+    current_student: Student,
+    password_data
+):
+    # Check Old Password
+    if not verify_password(
+        password_data.old_password,
+        current_student.password_hash
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Old Password is Incorrect"
+        )
+
+    # Check New Password Match
+    if (
+        password_data.new_password
+        != password_data.confirm_new_password
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="New Password and Confirm Password do not match"
+        )
+
+    # Hash New Password
+    current_student.password_hash = hash_password(
+        password_data.new_password
+    )
+
+    # Save to Database
+    db.commit()
+    db.refresh(current_student)
+
+    return {
+        "message": "Password Changed Successfully"
+    }
