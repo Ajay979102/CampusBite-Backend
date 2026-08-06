@@ -12,14 +12,12 @@ from app.security.jwt_handler import create_access_token
 # ==========================
 def register_student(db: Session, student_data):
 
-    # Password Match
     if student_data.password != student_data.confirm_password:
         raise HTTPException(
             status_code=400,
             detail="Password and Confirm Password do not match."
         )
 
-    # Duplicate Email
     existing_email = db.query(Student).filter(
         Student.college_email == student_data.college_email
     ).first()
@@ -30,7 +28,6 @@ def register_student(db: Session, student_data):
             detail="College Email already registered."
         )
 
-    # Duplicate Enrollment
     existing_enrollment = db.query(Student).filter(
         Student.enrollment_no == student_data.enrollment_no
     ).first()
@@ -41,7 +38,6 @@ def register_student(db: Session, student_data):
             detail="Enrollment Number already registered."
         )
 
-    # Create Student
     new_student = Student(
         full_name=student_data.full_name,
         college_email=student_data.college_email,
@@ -66,13 +62,12 @@ def register_student(db: Session, student_data):
 
 
 # ==========================
-# Student Login
+# Student Login (OAuth2)
 # ==========================
 def login_student(db: Session, login_data):
 
-    # Find Student
     student = db.query(Student).filter(
-        Student.college_email == login_data.college_email
+        Student.college_email == login_data.username
     ).first()
 
     if student is None:
@@ -82,7 +77,7 @@ def login_student(db: Session, login_data):
         )
 
     print("=" * 50)
-    print("Email :", login_data.college_email)
+    print("Email :", login_data.username)
     print("Entered Password :", login_data.password)
     print("Stored Hash :", student.password_hash)
 
@@ -108,15 +103,20 @@ def login_student(db: Session, login_data):
     )
 
     return {
-        "message": "Login Successful",
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+
+# ==========================
+# Update Profile
+# ==========================
 def update_student_profile(
     db: Session,
     current_student: Student,
     student_data
 ):
+
     current_student.mobile = student_data.mobile
     current_student.department = student_data.department
     current_student.year = student_data.year
@@ -137,12 +137,17 @@ def update_student_profile(
             "section": current_student.section
         }
     }
+
+
+# ==========================
+# Change Password
+# ==========================
 def change_password(
     db: Session,
     current_student: Student,
     password_data
 ):
-    # Check Old Password
+
     if not verify_password(
         password_data.old_password,
         current_student.password_hash
@@ -152,7 +157,6 @@ def change_password(
             detail="Old Password is Incorrect"
         )
 
-    # Check New Password Match
     if (
         password_data.new_password
         != password_data.confirm_new_password
@@ -162,20 +166,23 @@ def change_password(
             detail="New Password and Confirm Password do not match"
         )
 
-    # Hash New Password
     current_student.password_hash = hash_password(
         password_data.new_password
     )
 
-    # Save to Database
     db.commit()
     db.refresh(current_student)
 
     return {
         "message": "Password Changed Successfully"
     }
+
+
+# ==========================
+# Forgot Password
+# ==========================
 def forgot_password(db: Session, data):
-    # Check if email exists
+
     student = db.query(Student).filter(
         Student.college_email == data.college_email
     ).first()
@@ -186,15 +193,12 @@ def forgot_password(db: Session, data):
             detail="Student not found"
         )
 
-    # Generate 6-digit OTP
     otp = str(random.randint(100000, 999999))
 
-    # Store OTP temporarily
     student.reset_otp = otp
 
     db.commit()
 
-    # Development only
     print("=" * 50)
     print("RESET OTP :", otp)
     print("=" * 50)
@@ -203,9 +207,12 @@ def forgot_password(db: Session, data):
         "message": "OTP generated successfully. Check server console."
     }
 
+
+# ==========================
+# Reset Password
+# ==========================
 def reset_password(db: Session, data):
 
-    # Find Student
     student = db.query(Student).filter(
         Student.college_email == data.college_email
     ).first()
@@ -216,24 +223,22 @@ def reset_password(db: Session, data):
             detail="Student not found"
         )
 
-    # Check OTP
     if student.reset_otp != data.otp:
         raise HTTPException(
             status_code=400,
             detail="Invalid OTP"
         )
 
-    # Password Match
     if data.new_password != data.confirm_new_password:
         raise HTTPException(
             status_code=400,
             detail="Passwords do not match"
         )
 
-    # Update Password
-    student.password_hash = hash_password(data.new_password)
+    student.password_hash = hash_password(
+        data.new_password
+    )
 
-    # Clear OTP
     student.reset_otp = None
     student.otp_created_at = None
 

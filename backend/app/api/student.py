@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
@@ -44,11 +45,13 @@ def register(
 # -----------------------------
 @router.post("/login")
 def login(
-    student: StudentLogin,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    return login_student(db, student)
-
+    return login_student(
+        db=db,
+        login_data=form_data
+    )
 
 # -----------------------------
 # Get Logged-in Student Profile
