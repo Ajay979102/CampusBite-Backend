@@ -16,3 +16,9 @@ class StudentRegister(BaseModel):
 class StudentLogin(BaseModel):
     college_email: EmailStr
     password: str
+
+class StudentUpdate(BaseModel):
+    mobile: str
+    department: str
+    year: int
+    section: str

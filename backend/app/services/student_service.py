@@ -111,3 +111,28 @@ def login_student(db: Session, login_data):
         "access_token": access_token,
         "token_type": "bearer"
     }
+def update_student_profile(
+    db: Session,
+    current_student: Student,
+    student_data
+):
+    current_student.mobile = student_data.mobile
+    current_student.department = student_data.department
+    current_student.year = student_data.year
+    current_student.section = student_data.section
+
+    db.commit()
+    db.refresh(current_student)
+
+    return {
+        "message": "Profile Updated Successfully",
+        "student": {
+            "id": current_student.id,
+            "full_name": current_student.full_name,
+            "college_email": current_student.college_email,
+            "mobile": current_student.mobile,
+            "department": current_student.department,
+            "year": current_student.year,
+            "section": current_student.section
+        }
+    }

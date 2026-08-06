@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import text
+from fastapi.security import OAuth2PasswordBearer
 
 from app.database.connection import engine
 from app.security.hashing import hash_password, verify_password
